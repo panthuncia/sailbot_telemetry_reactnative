@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WPI Sailbot Telemetry</title>
+    <link href="css/dashboard.css" rel="stylesheet">
+    <link href="css/simple-grid.min.css" rel="stylesheet">
+    <link href="css/foundation.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+
+    <link href="/css/leaflet.css" rel="stylesheet"/>
+    <script src="/dependencies/leaflet.js"></script>
+    <script src="/dependencies/canvas-gauges.js" type="text/javascript"></script>
+    <script src="/dependencies/leaflet-triangle-marker.js" type="text/javascript"></script>
+    <script src="/dependencies/leaflet-rotate-marker.js" type="text/javascript"></script>
+
+    <script src="/js/draw_line.js"></script>
+    <!-- load leaflet.js -->
+</head>
+
+<body>
+<div id="map" style="width: 100%; height: 100vh; user-select: none;"></div>
+<!-- prettier-ignore -->
+<script>
+    var map = L.map('map').setView([51.505, -0.09], 13); // Set the initial coordinates and zoom level
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    //heading marker
+    
+
+    //boat icon
+    var arrowIcon = L.icon({
+        iconUrl: 'assets/arrow.png', // Path to your custom icon image
+        iconSize: [32, 32],  // Size of the icon
+        iconAnchor: [16, 32] // Anchor point of the icon (usually the bottom center)
+    });
+    var boatIcon = L.icon({
+        iconUrl: 'assets/boat.png', // Path to your custom icon image
+        iconSize: [32, 32],  // Size of the icon
+        iconAnchor: [16, 16] // Anchor point of the icon (usually the bottom center)
+    });
+    var arrowMarker = L.marker([51.505, -0.09], { icon: arrowIcon, rotationAngle: 90, rotationOrigin: "bottom center" }).addTo(map);
+    var boatMarker = L.marker([51.505, -0.09], { icon: boatIcon, rotationOrigin: "center" }).addTo(map);
+    function updateBoatPosition(newLat, newLong){
+        var newLatLng = L.latLng(newLat, newLong)
+        boatMarker.setLatLng(newLatLng)
+        arrowMarker.setLatLng(newLatLng)
+    }
+</script>
+<!--<div id="textbox">
+  <p>This is a text box overlay.</p>
+</div>-->
+<div id="node-status-container" style="position: absolute; top: 70%; right: 0; transform: translateY(-50%); z-index: 1000;">
+    <div class="node_status" id="NetworkComms">
+        <p>network_comms</p>
+    </div>
+    <div class="node_status" id="AirmarReader">
+        <p>airmar_reader</p>
+    </div>
+    <div class="node_status" id="BatteryMonitor">
+        <p>battery_monitor</p>
+    </div>
+    <div class="node_status" id="ControlSystem">
+        <p>control_system</p>
+    </div>
+    <div class="node_status" id="PWMController">
+        <p>pwm_controller</p>
+    </div>
+    <div class="node_status" id="TrimTabComms">
+        <p>trim_tab_comms</p>
+    </div>
+    <script>
+        var statusDivs = document.getElementsByClassName("node_status")
+        function NetworkCommsUp(){
+            document.getElementById("NetworkComms").style.backgroundColor = "green";
+        }
+        function NetworkCommsDown(){
+            document.getElementById("NetworkComms").style.backgroundColor = "red";
+        }
+        function AirmarReaderUp(){
+            document.getElementById("AirmarReader").style.backgroundColor = "green";
+        }
+        function AirmarReaderDown(){
+            document.getElementById("AirmarReader").style.backgroundColor = "red";
+        }
+        function BatteryMonitorUp(){
+            document.getElementById("BatteryMonitor").style.backgroundColor = "green";
+        }
+        function BatteryMonitorDown(){
+            document.getElementById("BatteryMonitor").style.backgroundColor = "red";
+        }
+        function ControlSystemUp(){
+            document.getElementById("ControlSystem").style.backgroundColor = "green";
+        }
+        function ControlSystemDown(){
+            document.getElementById("ControlSystem").style.backgroundColor = "red";
+        }
+        function PWMControllerUp(){
+            document.getElementById("PWMController").style.backgroundColor = "green";
+        }
+        function PWMControllerDown(){
+            document.getElementById("PWMController").style.backgroundColor = "red";
+        }
+        function TrimTabCommsUp(){
+            document.getElementById("TrimTabComms").style.backgroundColor = "green";
+        }
+        function TrimTabCommsDown(){
+            document.getElementById("TrimTabComms").style.backgroundColor = "red";
+        }
+        for (const div of statusDivs){
+            window[div.id+"_restart"] = () => {
+                console.log("Called function of "+div.id);
+            }
+        }
+        
+    </script>
+</div>
+<div id="panel-1"
+     style="position: absolute; height: 100%; top: 0px; left: 50%; transform: translateX(-50%); z-index: 1000; background-color: lightgrey; padding: 0px; border-radius: 20px; display: flex; align-items: center; overflow: auto; flex-direction: row">
+    <div id="gauge-container" style="margin-right: 20px; margin-left: 20px">
+        <canvas id="compass"
+                width="180"
+                height="180"
+                data-animation-duration="1500"
+                data-animation-rule="linear"
+                data-border-inner-width="0"
+                data-border-middle-width="0"
+                data-border-outer-width="10"
+                data-border-shadow-width="0"
+                data-borders="true"
+                data-color-border-outer="#ccc"
+                data-color-border-outer-end="#ccc"
+                data-color-circle-inner="#fff"
+                data-color-major-ticks="#222"
+                data-color-minor-ticks="#555"
+                data-color-needle="rgba(240, 128, 128, 1)"
+                data-color-needle-circle-outer="#ccc"
+                data-color-needle-end="rgba(255, 160, 122, .9)"
+                data-color-needle-shadow-down="#222"
+                data-color-numbers="#555"
+                data-highlights="false"
+                data-major-ticks="N,NE,E,SE,S,SW,W,NW,N"
+                data-max-value="360"
+                data-min-value="0"
+                data-minor-ticks="22"
+                data-needle-circle-outer="false"
+                data-needle-circle-size="15"
+                data-needle-end="99"
+                data-needle-start="50"
+                data-needle-type="line"
+                data-needle-width="3"
+                data-start-angle="180"
+                data-stroke-ticks="false"
+                data-ticks-angle="360"
+                data-type="radial-gauge"
+                data-value-box="false"
+                data-value-text-shadow="false"
+        ></canvas>
+        <div style="text-align: center; margin-top: -15px; user-select: none;">
+            <p>Heading</p>
+        </div>
+    </div>
+    <div id="gauge-container-1" style="margin-left: 20px; margin-right: 20px">
+        <canvas id="boat-speed"
+                width="170"
+                height="170"
+                data-animation-duration="1500"
+                data-animation-rule="linear"
+                data-border-inner-width="0"
+                data-border-middle-width="0"
+                data-border-outer-width="10"
+                data-border-shadow-width="0"
+                data-borders="true"
+                data-color-border-outer="#ccc"
+                data-color-border-outer-end="#ccc"
+                data-color-needle-shadow-down="#222"
+                data-color-plate="#fff"
+                data-highlights="[]"
+                data-major-ticks="0,5,10,15,20"
+                data-max-value="20"
+                data-needle-circle-inner="false"
+                data-needle-circle-outer="true"
+                data-needle-circle-size="7"
+                data-needle-type="arrow"
+                data-needle-width="2"
+                data-type="radial-gauge"
+                data-units="Km/h"
+        ></canvas>
+        <div style="text-align: center; margin-top: -15px; user-select: none;">
+            <p>Speed</p>
+        </div>
+    </div>
+</div>
+<div id="panel-2"
+     style="position: absolute; height: 50%; top: 50%; left: 0px; transform: translateY(-50%); z-index: 1000; background-color: lightgrey; width: 200px; padding: 10px; border-radius: 20px">
+    <div id="gauge-container-2">
+        <div style="text-align: center; margin-bottom: -15px; user-select: none;">
+            <p>Apparent wind</p>
+        </div>
+        <canvas id="wind-apparent"
+                width="150"
+                height="150"
+                data-animation-duration="1500"
+                data-animation-rule="linear"
+                data-border-inner-width="0"
+                data-border-middle-width="0"
+                data-border-outer-width="10"
+                data-border-shadow-width="0"
+                data-borders="true"
+                data-color-border-outer="#ccc"
+                data-color-border-outer-end="#ccc"
+                data-color-circle-inner="#fff"
+                data-color-major-ticks="#222"
+                data-color-minor-ticks="#555"
+                data-color-needle="rgba(240, 128, 128, 1)"
+                data-color-needle-circle-outer="#ccc"
+                data-color-needle-end="rgba(255, 160, 122, .9)"
+                data-color-needle-shadow-down="#222"
+                data-color-numbers="#555"
+                data-highlights="false"
+                data-major-ticks="0,45,90,135,180,225,270,315,0"
+                data-max-value="360"
+                data-min-value="0"
+                data-minor-ticks="22"
+                data-needle-circle-outer="false"
+                data-needle-circle-size="15"
+                data-needle-end="99"
+                data-needle-start="50"
+                data-needle-type="line"
+                data-needle-width="3"
+                data-start-angle="180"
+                data-stroke-ticks="false"
+                data-ticks-angle="360"
+                data-type="radial-gauge"
+                data-value-box="false"
+                data-value-text-shadow="false"
+        ></canvas>
+    </div>
+    <div id="gauge-container-3">
+        <div style="text-align: center; margin-bottom: -15px; user-select: none;">
+            <p>True wind</p>
+        </div>
+        <canvas id="wind-true"
+                width="150"
+                height="150"
+                data-animation-duration="1500"
+                data-animation-rule="linear"
+                data-border-inner-width="0"
+                data-border-middle-width="0"
+                data-border-outer-width="10"
+                data-border-shadow-width="0"
+                data-borders="true"
+                data-color-border-outer="#ccc"
+                data-color-border-outer-end="#ccc"
+                data-color-circle-inner="#fff"
+                data-color-major-ticks="#222"
+                data-color-minor-ticks="#555"
+                data-color-needle="rgba(240, 128, 128, 1)"
+                data-color-needle-circle-outer="#ccc"
+                data-color-needle-end="rgba(255, 160, 122, .9)"
+                data-color-needle-shadow-down="#222"
+                data-color-numbers="#555"
+                data-highlights="false"
+                data-major-ticks="N,NE,E,SE,S,SW,W,NW,N"
+                data-max-value="360"
+                data-min-value="0"
+                data-minor-ticks="22"
+                data-needle-circle-outer="false"
+                data-needle-circle-size="15"
+                data-needle-end="99"
+                data-needle-start="50"
+                data-needle-type="line"
+                data-needle-width="3"
+                data-start-angle="180"
+                data-stroke-ticks="false"
+                data-ticks-angle="360"
+                data-type="radial-gauge"
+                data-value-box="false"
+                data-value-text-shadow="false"
+        ></canvas>
+    </div>
+</div>
+<div id="contextMenu" style="display: none; z-index: 1000;">
+    <ul>
+        <li>Restart</li>
+    </ul>
+</div>
+<script src="/js/context_menu.js" type="text/javascript"></script>
+<script>
+    // var gauges = document.getElementsByTagName('canvas');
+    // var compass = gauges[0];
+    // var speed = gauges[1];
+
+    var compass = document.getElementById("compass")
+    var boat_speed = document.getElementById("boat-speed")
+    var wind_apparent = document.getElementById("wind-apparent")
+    var wind_true = document.getElementById("wind-true")
+
+    function updateHeading(x) {
+        console.log(x)
+        compass.setAttribute("data-value", x);
+        //boatMarker.setRotationAngle(x)
+        arrowMarker.setRotationAngle(x)
+    }
+
+    function updateBoatSpeed(x) {
+        boat_speed.setAttribute("data-value", x);
+    }
+
+    function updateApparentWind(x){
+        wind_apparent.setAttribute("data-value", x)
+    }
+
+    function updateTrueWind(x){
+        wind_true.setAttribute("data-value", x)
+    }
+</script>
+<div id="wing_container" style="width: 100px; height: 300px; position: absolute; top: 0px; left: 100%; transform: translateX(-100%); z-index: 1000; background-color: lightgray; border-radius: 20px;">
+    <object id="wingImage" data="assets/wing.svg" type="image/svg+xml" style="transform: scaleY(-1); display: block; margin-left: auto; margin-right: auto; margin-bottom: 0; opacity: 70%; user-select: none;"></object>
+    <canvas id="trimTabBarCanvas" width="100" height="100" style="margin-bottom: 0; opacity: 70%;"></canvas>
+    <canvas id="trimTabCanvas" width="100" height="100" style="margin-top: 0;"></canvas>
+    <script src="/js/trim_tab.js" type="text/javascript"></script>
+</div>
+<div id="rudder_container" style="width: 200px; height: 300px; position: absolute; top: 0px; left: 90%; transform: translateX(-100%); z-index: 1000; background-color: lightgray; border-radius: 20px;">
+    <object id="boatImage" data="assets/boat.svg" type="image/svg+xml" style="display: block; margin-left: auto; margin-right: auto; margin-bottom: 0; opacity: 50%; user-select: none;"></object>
+    <canvas id="rudderCanvas" width="150" height="100" style="position: absolute; left: 50%; top: 60%; transform: translateX(-50%); margin-top: 0; display: block; margin-left: auto; margin-right: auto;"></canvas>
+    <script src="/js/rudder.js" type="text/javascript"></script>
+</div>
+</body>
+</html>
