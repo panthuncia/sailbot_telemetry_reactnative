@@ -4,46 +4,46 @@ import Svg, { Circle, Line, Text } from 'react-native-svg';
 
 const Compass = ({radius, value, style, zIndex }) => {
   const circumference = 2 * Math.PI * radius;
-  const percentage = (value / 100) * circumference;
-  const angle = (value / 100) * 360;
+  const percentage = (value / 360) * circumference;
+  const angle = (value / 360) * 360;
 
   return (
     <View style={style} zIndex={zIndex}>
       <Svg width={2 * radius} height={2 * radius}>
-        <Circle
+        {/* <Circle
           cx={radius}
           cy={radius}
           r={radius - 10}
           stroke="lightgrey"
           strokeWidth="20"
-        />
-        <Circle
+        /> */}
+        {/* <Circle
           cx={radius}
           cy={radius}
           r={radius - 10}
           stroke="blue"
           strokeWidth="20"
           strokeDasharray={[percentage, circumference]}
-        />
+        /> */}
         <Circle
           cx={radius}
           cy={radius}
           r={radius}// Adjust the size of the center circle
           fill="lightgrey" // Change the color of the center
         />
-        <Text x={radius} y={radius} fill="black" fontSize="15" textAnchor="middle">
+        <Text x={radius-10} y={radius-10} fill="black" fontSize="15" textAnchor="start">
           {`${value}°`}
         </Text>
-        <Text x={radius} y={20} fill="black" fontSize="15" textAnchor="middle">
+        <Text x={radius-4} y={4} fill="black" fontSize="15" textAnchor="start">
           {`N`}
         </Text>
-        <Text x={radius} y={radius*2-20} fill="black" fontSize="15" textAnchor="middle">
+        <Text x={radius-4} y={radius*2-20} fill="black" fontSize="15" textAnchor="start">
           {`S`}
         </Text>
-        <Text x={radius*2-20} y={radius} fill="black" fontSize="15" textAnchor="middle">
+        <Text x={radius*2-10} y={radius-10} fill="black" fontSize="15" textAnchor="start">
           {`E`}
         </Text>
-        <Text x={20} y={radius} fill="black" fontSize="15" textAnchor="middle">
+        <Text x={4} y={radius-10} fill="black" fontSize="15" textAnchor="start">
           {`W`}
         </Text>
         <Line

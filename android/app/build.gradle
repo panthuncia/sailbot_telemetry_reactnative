@@ -73,9 +73,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.sailbottelemetry"
+    namespace "com.sailbot_telemetry_reactnative"
     defaultConfig {
-        applicationId "com.sailbottelemetry"
+        applicationId "com.sailbot_telemetry_reactnative"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

@@ -83,7 +83,7 @@ function App(): JSX.Element {
         }}
       />
       <View style={styles.gaugeContainer}>
-        <Compass radius={60} style={styles.gauge} value={0} zIndex={1} />
+        <Compass radius={60} style={styles.gauge} value={355} zIndex={1} />
         <Text style={styles.gaugeText}>Heading</Text>
       </View>
     </View>

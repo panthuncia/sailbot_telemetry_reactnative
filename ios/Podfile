@@ -25,7 +25,7 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'SailbotTelemetry' do
+target 'sailbot_telemetry_reactnative' do
   config = use_native_modules!
 
   # Flags change depending on the env values.
@@ -45,7 +45,7 @@ target 'SailbotTelemetry' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  target 'SailbotTelemetryTests' do
+  target 'sailbot_telemetry_reactnativeTests' do
     inherit! :complete
     # Pods for testing
   end
